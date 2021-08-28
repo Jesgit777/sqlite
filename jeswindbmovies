@@ -1,0 +1,242 @@
+Prerequistes:
+o	Download latest version of sqlite-jdbc-(VERSION).jar from sqlite-jdbc repository. 
+2020-08-14 - Release 3.33.
+o	Add the downloaded jar file to your class path.
+o	We can now connect to the SQLite database using java.
+Steps:
+Step1: The code to connect SQLite database
+1.	import java.sql.Connection;  
+2.	import java.sql.DriverManager;  
+3.	import java.sql.SQLException;  
+4.	   
+5.	public class Connect {  
+6.	     /** 
+7.	     * Connect to a sample database 
+8.	     */  
+9.	    public static void connect() {  
+10.	        Connection conn = null;  
+11.	        try {  
+12.	            // db parameters  
+13.	            String url = "jdbc:sqlite:C:/sqlite/JTP.db";  
+14.	            // create a connection to the database  
+15.	            conn = DriverManager.getConnection(url);  
+16.	              
+17.	            System.out.println("Connection to SQLite has been established.");  
+18.	              
+19.	        } catch (SQLException e) {  
+20.	            System.out.println(e.getMessage());  
+21.	        } finally {  
+22.	            try {  
+23.	                if (conn != null) {  
+24.	                    conn.close();  
+25.	                }  
+26.	            } catch (SQLException ex) {  
+27.	                System.out.println(ex.getMessage());  
+28.	            }  
+29.	        }  
+30.	    }  
+31.	    /** 
+32.	     * @param args the command line arguments 
+33.	     */  
+34.	    public static void main(String[] args) {  
+35.	        connect();  
+36.	    }  
+37.	}  
+Step 2: we create a database named jeswin
+1.	import java.sql.Connection;  
+2.	import java.sql.DatabaseMetaData;  
+3.	import java.sql.DriverManager;  
+4.	import java.sql.SQLException;  
+5.	   
+6.	public class Create {  
+7.	  
+8.	    public static void createNewDatabase(String fileName) {  
+9.	   
+10.	        String url = "jdbc:sqlite:C:/sqlite/" + fileName;  
+11.	   
+12.	        try {  
+13.	            Connection conn = DriverManager.getConnection(url);  
+14.	            if (conn != null) {  
+15.	                DatabaseMetaData meta = conn.getMetaData();  
+16.	                System.out.println("The driver name is " + meta.getDriverName());  
+17.	                System.out.println("A new database has been created.");  
+18.	            }  
+19.	   
+20.	        } catch (SQLException e) {  
+21.	            System.out.println(e.getMessage());  
+22.	        }  
+23.	    }  
+24.	  
+25.	    public static void main(String[] args) {  
+26.	        createNewDatabase("jeswin.db");  
+27.	    }  
+28.	}  
+
+Step 3:we create an database called movies and add the records like name,actor,actress,director,yearof release.
+import java.sql.Connection;  
+import java.sql.DriverManager;  
+import java.sql.SQLException;  
+import java.sql.Statement;  
+   
+public class CreateTable {  
+   
+    public static void createNewTable() {  
+        // SQLite connection string  
+        String url = "jdbc:sqlite:C://sqlite/jeswin.db";  
+          
+        // SQL statement for creating a new table  
+        String sql = "CREATE TABLE IF NOT EXISTS movies (\n"  
+                + " name text PRIMARY KEY,\n"  
+                + " actor text NOT NULL,\n"
+		+ " actress text NOT NULL,\n" 
+                + " director text NOT NULL,\n"   
+                + " yearofrelease integer NOT NULL\n"  
+                + ");";  
+          
+        try{  
+            Connection conn = DriverManager.getConnection(url);  
+            Statement stmt = conn.createStatement();  
+            stmt.execute(sql);  
+        } catch (SQLException e) {  
+            System.out.println(e.getMessage());  
+        }  
+    }  
+   
+    /** 
+     * @param args the command line arguments 
+     */  
+    public static void main(String[] args) {  
+        createNewTable();  
+    }  
+Step 4: Inserting records
+import java.sql.Connection;  
+import java.sql.DriverManager;  
+import java.sql.PreparedStatement;  
+import java.sql.SQLException;  
+   
+public class InsertRecords {  
+   
+    private Connection connect() {  
+        // SQLite connection string  
+        String url = "jdbc:sqlite:C://sqlite/jeswin.db";  
+        Connection conn = null;  
+        try {  
+            conn = DriverManager.getConnection(url);  
+        } catch (SQLException e) {  
+            System.out.println(e.getMessage());  
+        }  
+        return conn;  
+    }  
+   
+  
+    public void insert(String name, String actor, String actress, String director, int yearofrelease) {  
+        String sql = "INSERT INTO movies(name, actor, actress, director, yearofrelease) VALUES(?,?,?,?,?)";  
+   
+        try{  
+            Connection conn = this.connect();  
+            PreparedStatement pstmt = conn.prepareStatement(sql);  
+            pstmt.setString(1, name);  
+            pstmt.setString(2, actor);  
+	    pstmt.setString(3, actress);  
+            pstmt.setString(4, director); 
+	    pstmt.setString(5, yearofrelease);   
+            pstmt.executeUpdate();  
+        } catch (SQLException e) {  
+            System.out.println(e.getMessage());  
+        }  
+    }  
+   
+    public static void main(String[] args) {  
+   
+        InsertRecords app = new InsertRecords();  
+        // insert five new rows  
+        app.insert("Rocky", "Silvestor stallone", "Adrian", "Robert", 1976);  
+        app.insert("Rocky 2", "Silvestor stallone", "Adrian", "Robert", 1979);  
+        app.insert("Terminator","Arnold","Sarah","James Cameron",1975);
+        app.insert("Mask","Jimmy Carey","Jenny","Chuck Russel",1995);
+        app.insert("Tenet","Robert pattinson","Elizabeth","Christopher Nolan",2020);  
+    }  
+   
+} 
+   
+}  
+Step 5: Query to select all row from the movies table.
+import java.sql.DriverManager;  
+import java.sql.Connection;  
+import java.sql.ResultSet;  
+import java.sql.SQLException;  
+import java.sql.Statement;  
+   
+public class SelectRecords {  
+   
+    private Connection connect() {  
+        // SQLite connection string  
+        String url = "jdbc:sqlite:C://sqlite/jeswin.db";  
+        Connection conn = null;  
+        try {  
+            conn = DriverManager.getConnection(url);  
+        } catch (SQLException e) {  
+            System.out.println(e.getMessage());  
+        }  
+        return conn;  
+    }  
+   
+  
+    public void selectAll(){  
+        String sql = "SELECT * FROM movies";  
+          
+        try {  
+            Connection conn = this.connect();  
+            Statement stmt  = conn.createStatement();  
+            ResultSet rs    = stmt.executeQuery(sql);  
+              
+            // loop through the result set  
+            while (rs.next()) {  
+                System.out.println(rs.getString("name") +  "\t" +   
+                                   rs.getString("actor") + "\t" +
+				   rs.getString("actress") + "\t" + 
+    				   rs.getString("director") + "\t" +   
+                                   rs.getInt("yearofrelease") + "\t"); 
+            }  
+        } catch (SQLException e) {  
+            System.out.println(e.getMessage());  
+        }  
+    }  
+      
+     
+    /** 
+     * @param args the command line arguments 
+     */  
+    public static void main(String[] args) {  
+        SelectRecords app = new SelectRecords();  
+        app.selectAll();  
+    }  
+   
+}  
+Step 6: Query to display the movies where actor name is Silvestor stallone.
+    /**
+     * Get the warehouse whose capacity greater than a specified capacity
+     * @param capacity 
+     */
+    public void getCapacityGreaterThan(double capacity){
+               String sql = "SELECT name "
+                          + "FROM movies WHERE actor="Silvester stallone";
+        
+        try (Connection conn = this.connect();
+             PreparedStatement pstmt  = conn.prepareStatement(sql)){
+            
+            // set the value
+            pstmt.setDouble(1,name);
+            //
+            ResultSet rs  = pstmt.executeQuery();
+            
+            // loop through the result set
+            while (rs.next()) {
+                System.out.println(rs.getString("name"));
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+
